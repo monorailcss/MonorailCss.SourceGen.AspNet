@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EC6BBC8E-717D-46B0-9446-170BC0709D2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonorailCss.SourceGen.AspNet", "src\MonorailCss.SourceGen.AspNet\MonorailCss.SourceGen.AspNet.csproj", "{51BA7383-EE83-4B05-A8DB-393687DAE71D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D7FB3076-30A5-43D8-8F04-0E7E950882D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerTestApp", "tests\BlazorServerTestApp\BlazorServerTestApp.csproj", "{72438DD8-0AB7-485F-8B54-DE314F70B019}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasmTestApp", "tests\BlazorWasmTestApp\BlazorWasmTestApp.csproj", "{C5BF70FA-18EB-4751-BABF-A3637D44E572}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoRailCss.Tests.BlazorCssJit", "tests\MonoRailCss.Tests.BlazorCssJit\MonoRailCss.Tests.BlazorCssJit.csproj", "{F3C20191-929C-45DC-97E8-320F1C0D7D17}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{51BA7383-EE83-4B05-A8DB-393687DAE71D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51BA7383-EE83-4B05-A8DB-393687DAE71D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51BA7383-EE83-4B05-A8DB-393687DAE71D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51BA7383-EE83-4B05-A8DB-393687DAE71D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72438DD8-0AB7-485F-8B54-DE314F70B019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72438DD8-0AB7-485F-8B54-DE314F70B019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72438DD8-0AB7-485F-8B54-DE314F70B019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72438DD8-0AB7-485F-8B54-DE314F70B019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5BF70FA-18EB-4751-BABF-A3637D44E572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5BF70FA-18EB-4751-BABF-A3637D44E572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5BF70FA-18EB-4751-BABF-A3637D44E572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5BF70FA-18EB-4751-BABF-A3637D44E572}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3C20191-929C-45DC-97E8-320F1C0D7D17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C20191-929C-45DC-97E8-320F1C0D7D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C20191-929C-45DC-97E8-320F1C0D7D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C20191-929C-45DC-97E8-320F1C0D7D17}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{51BA7383-EE83-4B05-A8DB-393687DAE71D} = {EC6BBC8E-717D-46B0-9446-170BC0709D2D}
+		{72438DD8-0AB7-485F-8B54-DE314F70B019} = {D7FB3076-30A5-43D8-8F04-0E7E950882D7}
+		{C5BF70FA-18EB-4751-BABF-A3637D44E572} = {D7FB3076-30A5-43D8-8F04-0E7E950882D7}
+		{F3C20191-929C-45DC-97E8-320F1C0D7D17} = {D7FB3076-30A5-43D8-8F04-0E7E950882D7}
+	EndGlobalSection
+EndGlobal
