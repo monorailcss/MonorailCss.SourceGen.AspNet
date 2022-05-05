@@ -1,17 +1,36 @@
-﻿@inherits LayoutComponentBase
+﻿@using global::MonorailCss
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
+<HeadContent>
+    <style>
+        @_cssContent
+    </style>
+</HeadContent>
+
+<div class="font-sans relative flex flex-col sm:flex-row">
+    <div class="bg-gradient-to-b from-blue-900 to-purple-900 sticky sm:w-72 sm:h-screen ">
         <NavMenu />
     </div>
 
-    <main>
-        <div class="top-row px-4">
+    <main class="flex-1">
+        <div class="hidden sm:flex sm:t-0 bg-slate-50 border-b border-b-slate-100 justify-end h-16 flex items-center px-4">
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
 
-        <article class="content px-4">
+        <article class="px-4 pt-4 prose">
             @Body
         </article>
     </main>
 </div>
+
+@code{
+    private string _cssContent = null!;
+
+    protected override void OnInitialized()
+    {
+        var foo = new CssFramework();
+        var values = MonorailCss.Values();
+        _cssContent = foo.Process(values);
+    }
+
+}

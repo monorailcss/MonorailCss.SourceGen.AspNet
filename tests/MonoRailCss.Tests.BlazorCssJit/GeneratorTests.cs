@@ -25,34 +25,42 @@ public class GeneratorTests
             ReferenceAssemblies = ReferenceAssemblies,
             TestState =
             {
-                Sources = { input.Trim().ReplaceLineEndings() }, GeneratedSources = { (typeof(CssJitGenerator), "cssjit.g.cs", output.Trim().ReplaceLineEndings()) },
+                Sources = { input.Trim().ReplaceLineEndings() }, GeneratedSources = { (typeof(CssJitGenerator), "monorail-css-jit.g.cs", output.Trim().ReplaceLineEndings()) },
             }
         };
         await test.RunAsync();
     }
 
     private string output = @"
-namespace MonorailCss
+namespace BlazorServerTestApp.Pages
 {
-    public static partial class CssJit
+    public static partial class MonorailCSS
     {
         public static string[] Values() => new string[] {
-
-""alert"",""alert-secondary"",""mt-4"",""btn"",""btn-primary"",""oi"",""oi-pencil"",""me-2"",""text-nowrap"",""font-weight-bold"",""link-dark"",""oi-home"",
+""alert alert-secondary mt-4"", ""btn btn-primary"", ""oi oi-pencil me-2"", ""text-nowrap"", ""font-weight-bold link-dark"", ""oi oi-home"", ""bg-red-200"", ""bg-red-300""
         };
     }
 }
 ";
 
     private string input = @"
+global using static BlazorServerTestApp.Pages.MonorailCSS;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using System;
 
-
 namespace BlazorServerTestApp.Pages
 {
+  public static partial class MonorailCSS {
+    public static string CssClass(string s) => s;
+  }
+
+  internal class CssClassCall {
+     private string DoIt() => CssClass(""bg-red-200"") + MonorailCSS.CssClass(""bg-red-300"");
+  }
+
    public class SurveyPrompt : ComponentBase
   {
     protected override void BuildRenderTree(
