@@ -36,7 +36,7 @@ namespace BlazorServerTestApp.Pages
 {
     public static partial class MonorailCSS
     {
-        public static string[] Values() => new string[] {
+        public static string[] CssClassValues() => new string[] {
 ""alert alert-secondary mt-4"", ""btn btn-primary"", ""oi oi-pencil me-2"", ""text-nowrap"", ""font-weight-bold link-dark"", ""oi oi-home"", ""bg-red-200"", ""bg-red-300""
         };
     }

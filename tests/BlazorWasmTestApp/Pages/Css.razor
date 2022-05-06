@@ -5,7 +5,7 @@
 <h2>Here's all the CSS classes in your razor project</h2>
 
 @{
-    var allClasses = string.Join(Environment.NewLine, MonorailCss.Values());
+    var allClasses = string.Join(Environment.NewLine, CssClassValues());
 }
 
 <pre>@allClasses</pre>

@@ -34,7 +34,7 @@ app.MapGet("/styles/style.css", (IMemoryCache cache) =>
     var style = cache.GetOrCreate("monorail-style", _ =>
     {
         var framework = new CssFramework();
-        return framework.Process(Values());
+        return framework.Process(CssClassValues());
     });
 
     return Results.Text(style, "text/css");

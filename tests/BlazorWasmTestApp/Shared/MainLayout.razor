@@ -29,7 +29,7 @@
     protected override void OnInitialized()
     {
         var framework = new CssFramework();
-        var values = MonorailCss.Values();
+        var values = CssClassValues();
         _cssContent = framework.Process(values);
     }
 

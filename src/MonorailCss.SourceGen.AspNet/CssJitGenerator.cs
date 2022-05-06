@@ -169,7 +169,7 @@ public class CssJitGenerator : IIncrementalGenerator
 {{
     {accessibility} {(isStatic ? "static " : "")}partial class {className}
     {{
-        public static string[] Values() => new string[] {{
+        public static string[] CssClassValues() => new string[] {{
 ");
         foreach (var css in classesToGenerate)
         {
