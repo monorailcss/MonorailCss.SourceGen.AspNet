@@ -1,0 +1,11 @@
+@page "/css"
+
+<PageTitle>CSS Info</PageTitle>
+
+<h2>Here's all the CSS classes in your razor project</h2>
+
+@{
+    var allClasses = string.Join(Environment.NewLine, MonorailCss.Values());
+}
+
+<pre>@allClasses</pre>

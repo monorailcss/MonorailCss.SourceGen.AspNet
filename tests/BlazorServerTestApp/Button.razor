@@ -1,0 +1,13 @@
+﻿<button type="submit" class="inline-flex items-center px-2 py-1 border border-slate-300 shadow-sm rounded text-gray-700 bg-slate-100 hover:bg-slate-50" onclick="@OnClick" @onclick:preventDefault="@PreventDefault">@ChildContent</button>
+
+@code {
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = null!;
+
+    private bool PreventDefault => OnClick.HasDelegate;
+
+}
