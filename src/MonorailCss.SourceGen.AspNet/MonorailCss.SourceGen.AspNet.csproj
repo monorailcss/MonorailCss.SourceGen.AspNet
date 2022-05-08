@@ -9,6 +9,7 @@
         <Copyright>Phil Scott</Copyright>
         <PackageProjectUrl>https://github.com/monorailcss/MonorailCss.SourceGen.AspNet</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
@@ -36,7 +37,6 @@
         <ItemGroup>
             <TargetPathWithTargetPlatformMoniker Include="$(PKGAngleSharp)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
             <TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Text_Encoding_CodePages)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-
         </ItemGroup>
     </Target>
 </Project>

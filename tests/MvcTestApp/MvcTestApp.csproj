@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Exclude the output of source generators from the compilation -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="Views/**/*.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.15" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MonorailCss.SourceGen.AspNet\MonorailCss.SourceGen.AspNet.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+  </ItemGroup>
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\js\site.js" />
+  </ItemGroup>
+</Project>

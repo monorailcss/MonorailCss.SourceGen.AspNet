@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] - MvcTestApp</title>
+    <link href="/styles/style.css" rel="stylesheet"/>
+</head>
+<body class="font-sans">
+<header>
+    <nav class="bg-gray-50 shadow-sm border-b border-gray-300 mb-3">
+        <div class="container md:container-lg mx-auto px-2 flex flex-row items-center">
+            <a class="text-2xl font-bold mr-4 py-4 text-sky-700" asp-area="" asp-controller="Home" asp-action="Index">MvcTestApp</a>
+            <div class="">
+                <ul class="flex-1 flex flex-row space-x-4">
+                    <li>
+                        <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+<div class="container md:container-lg mx-auto px-2">
+    <main role="main" class="prose pb-3">
+        @RenderBody()
+    </main>
+</div>
+
+<footer class="border-t border-t-gray-400 text-gray-300">
+    <div class="container md:container-lg mx-auto px-2 pt-4">
+        &copy; 2022 - MvcTestApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    </div>
+</footer>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

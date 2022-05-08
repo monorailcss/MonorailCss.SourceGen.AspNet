@@ -5,7 +5,7 @@ using MonoRailCss.Tests.BlazorCssJit.Verifiers;
 
 namespace MonoRailCss.Tests.BlazorCssJit;
 
-using VerifyCS = CSharpIncrementalSourceGeneratorVerifier<CssJitGenerator>;
+using VerifyCS = CSharpIncrementalSourceGeneratorVerifier<CssClassCallGenerator>;
 
 public class GeneratorTests
 {
@@ -25,7 +25,7 @@ public class GeneratorTests
             ReferenceAssemblies = ReferenceAssemblies,
             TestState =
             {
-                Sources = { input.Trim().ReplaceLineEndings() }, GeneratedSources = { (typeof(CssJitGenerator), "monorail-css-jit.g.cs", output.Trim().ReplaceLineEndings()) },
+                Sources = { input.Trim().ReplaceLineEndings() }, GeneratedSources = { (typeof(CssClassCallGenerator), "monorail-css-jit.g.cs", output.Trim().ReplaceLineEndings()) },
             }
         };
         await test.RunAsync();
