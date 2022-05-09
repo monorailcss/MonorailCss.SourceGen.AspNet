@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -67,7 +68,8 @@ internal static class Helpers
 
     public static string[] GetCssClassFromHtml(string value)
     {
-        const string RegExPattern = @"class\s*=\s*[\'\""](?<value>[^<]*?)[\'\""]";
+        // todo, make this configurable.
+        const string RegExPattern = @"(class\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|((cssclass\s*=\s*[\'\""](?<value>[^<]*?)[\'\""]))|(CssClass\s*\(\s*\""(?<value>[^<]*?)\""\s*\))";
         var matches = Regex.Matches(value, RegExPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         var results = new string[matches.Count];
         for (var i = 0; i < matches.Count; i++)
@@ -75,6 +77,40 @@ internal static class Helpers
             results[i] = matches[i].Groups["value"].Captures[0].Value;
         }
 
+        #if DEBUG
+        var list = new List<string>(results) { DateTime.Now.ToString(CultureInfo.InvariantCulture) };
+        results = list.ToArray();
+        #endif
+
         return results;
+    }
+
+    public static string GetGeneratedFileName(string path)
+    {
+        return $"monorail-css-file-parser-{Path.GetFileName(path)}-{GetDeterministicHashCode(path)}-jit.g.cs";
+    }
+
+    public static string GetGeneratedMethodName(string path)
+    {
+        return $"Get{Path.GetFileName(path)}_{GetDeterministicHashCode(path)}".Replace(".", "_").Replace("-", "_");
+    }
+
+    static int GetDeterministicHashCode(this string str)
+    {
+        unchecked
+        {
+            int hash1 = (5381 << 16) + 5381;
+            int hash2 = hash1;
+
+            for (int i = 0; i < str.Length; i += 2)
+            {
+                hash1 = ((hash1 << 5) + hash1) ^ str[i];
+                if (i == str.Length - 1)
+                    break;
+                hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
+            }
+
+            return hash1 + (hash2 * 1566083941);
+        }
     }
 }

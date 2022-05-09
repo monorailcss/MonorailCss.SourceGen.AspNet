@@ -18,14 +18,14 @@ public class GeneratorTests
         );
 
     [Fact]
-    public async Task Can_Generate()
+    public async Task Can_Generate_from_CssClass_call()
     {
         var test = new VerifyCS.Test
         {
             ReferenceAssemblies = ReferenceAssemblies,
             TestState =
             {
-                Sources = { input.Trim().ReplaceLineEndings() }, GeneratedSources = { (typeof(CssClassCallGenerator), "monorail-css-jit.g.cs", output.Trim().ReplaceLineEndings()) },
+                Sources = { input.Trim().ReplaceLineEndings() }, GeneratedSources = { (typeof(CssClassCallGenerator), "monorail-css-cssclass-jit.g.cs", output.Trim().ReplaceLineEndings()) },
             }
         };
         await test.RunAsync();
@@ -36,8 +36,8 @@ namespace BlazorServerTestApp.Pages
 {
     public static partial class MonorailCSS
     {
-        public static string[] CssClassValues() => new string[] {
-""alert alert-secondary mt-4"", ""btn btn-primary"", ""oi oi-pencil me-2"", ""text-nowrap"", ""font-weight-bold link-dark"", ""oi oi-home"", ""bg-red-200"", ""bg-red-300""
+        private static string[] CssClassCallValues() => new string[] {
+""bg-red-200"", ""bg-red-300""
         };
     }
 }

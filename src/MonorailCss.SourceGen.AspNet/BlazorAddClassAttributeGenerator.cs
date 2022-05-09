@@ -7,6 +7,9 @@ namespace MonorailCss.SourceGen.AspNet;
 [Generator]
 public class BlazorAddClassAttributeGenerator : IIncrementalGenerator
 {
+    internal const string GeneratedMethodName = "BlazorAddClass";
+    private const string GeneratedFileName = "monorail-css-blazor-add-class-jit.g.cs";
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Do a simple filter for monorail
@@ -58,7 +61,7 @@ public class BlazorAddClassAttributeGenerator : IIncrementalGenerator
     {
         var classesToGenerate = new HashSet<string>(values.Right.SelectMany(i => i));
 
-        var source = Helpers.GenerateExtensionClass(values.Left, "BlazorAddClass", classesToGenerate);
-        context.AddSource("monorail-css-blazor-add-class-jit.g.cs", source);
+        var source = Helpers.GenerateExtensionClass(values.Left, GeneratedMethodName, classesToGenerate);
+        context.AddSource(GeneratedFileName, source);
     }
 }

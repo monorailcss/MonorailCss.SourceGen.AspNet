@@ -4,9 +4,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MonorailCss.SourceGen.AspNet;
 
-[Generator]
 public class BlazorAddMarkupGenerator : IIncrementalGenerator
 {
+    internal const string GeneratedMethodName = "BlazorMarkupValues";
+    private const string GeneratedFileName = "monorail-css-blazor-markup-jit.g.cs";
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Do a simple filter for monorail
@@ -56,7 +58,7 @@ public class BlazorAddMarkupGenerator : IIncrementalGenerator
     {
         var classesToGenerate = new HashSet<string>(values.Right.SelectMany(i => i));
 
-        var source = Helpers.GenerateExtensionClass(values.Left, "BlazorMarkupValues", classesToGenerate);
-        context.AddSource("monorail-css-blazor-markup-jit.g.cs", source);
+        var source = Helpers.GenerateExtensionClass(values.Left, GeneratedMethodName, classesToGenerate);
+        context.AddSource(GeneratedFileName, source);
     }
 }
