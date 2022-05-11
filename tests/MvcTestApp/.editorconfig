@@ -1,0 +1,4 @@
+root = true
+
+[*]
+fileparsergenerator_razor_regex = merp

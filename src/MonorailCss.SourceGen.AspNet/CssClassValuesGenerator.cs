@@ -18,17 +18,12 @@ public class CssClassValuesGenerator : IIncrementalGenerator
                 transform: static (ctx, _) => Helpers.GetMonorailsSemanticTargetForGeneration(ctx))
             .Where(static m => m is not null)!;
 
-        // find all additional files that end with .cshtml or .razor
-        var razorFiles = context.AdditionalTextsProvider
-            .Where(static file => file.Path.EndsWith(".cshtml") || file.Path.EndsWith(".razor"))
-            .Select((text, _) => Helpers.GetGeneratedMethodName(text.Path));
-
-        context.RegisterSourceOutput(monorailClassDeclarations.Collect().Combine(razorFiles.Collect()), static (spc, source) => Execute(source, spc));
+        context.RegisterSourceOutput(monorailClassDeclarations.Collect(), static (spc, source) => Execute(source, spc));
     }
 
-    private static void Execute((ImmutableArray<INamedTypeSymbol> Left, ImmutableArray<string> Right) values, SourceProductionContext spc)
+    private static void Execute(ImmutableArray<INamedTypeSymbol> symbols, SourceProductionContext spc)
     {
-        var symbol = values.Left.FirstOrDefault();
+        var symbol = symbols.FirstOrDefault();
         if (symbol == null)
         {
             return;
@@ -36,7 +31,7 @@ public class CssClassValuesGenerator : IIncrementalGenerator
 
         var ns = symbol.ContainingNamespace.ToDisplayString();
         var className = symbol.Name;
-        var accessibility = symbol.DeclaredAccessibility.ToString().ToLower();
+        var accessibility = Helpers.GetAccessibility(symbol);
         var isStatic = symbol.IsStatic;
 
         var sb = new StringBuilder();
@@ -51,19 +46,11 @@ public class CssClassValuesGenerator : IIncrementalGenerator
     {{
         public static string[] CssClassValues() {{
             var output = new List<string>();
-            // output.AddRange({BlazorAddMarkupGenerator.GeneratedMethodName}());
-            // output.AddRange({BlazorAddClassAttributeGenerator.GeneratedMethodName}());
             output.AddRange({CssClassCallGenerator.GeneratedMethodName}());
-            ");
+            output.AddRange({FileParserGenerator.GeneratedMethodName}());
 
-        foreach (var methodName in values.Right)
-        {
-            sb.AppendLine($"output.AddRange({methodName}());");
-        }
-
-        sb.AppendLine(@"
             return output.ToArray();
-        }
+        }}
     ");
         sb.AppendLine(@"
     }
