@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MonorailCss.SourceGen.AspNet;
 
@@ -16,15 +18,26 @@ public class FileParserGenerator: IIncrementalGenerator
             var exists = provider.GlobalOptions.TryGetValue("fileparsergenerator_razor_regex",
                 out var configValue);
 
-            return exists
+            var regex = exists
                 ? configValue!
                 : @"(class\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|((cssclass\s*=\s*[\'\""](?<value>[^<]*?)[\'\""]))|(CssClass\s*\(\s*\""(?<value>[^<]*?)\""\s*\))";
+            return regex;
         });
 
-        // Do a simple filter for monorail
         IncrementalValuesProvider<INamedTypeSymbol> monorailClassDeclarations = context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (s, _) => Helpers.IsMonorailClassSyntaxTargetForGeneration(s),
+                predicate: static (s, _) =>
+                {
+                    if (s is not ClassDeclarationSyntax c) return false;
+                    if (!c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase)) return false;
+
+                    // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+                    foreach (var i in c.Modifiers)
+                    {
+                        if (i.IsKind(SyntaxKind.PartialKeyword)) return true;
+                    }
+
+                    return false;                },
                 transform: static (ctx, _) => Helpers.GetMonorailsSemanticTargetForGeneration(ctx))
             .Where(static m => m is not null)!;
 

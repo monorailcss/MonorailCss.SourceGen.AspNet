@@ -20,7 +20,6 @@
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
     </ItemGroup>
-
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net461' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'net6.0' ">
         <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
     </ItemGroup>

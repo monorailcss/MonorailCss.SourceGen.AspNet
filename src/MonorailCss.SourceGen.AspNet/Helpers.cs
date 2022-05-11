@@ -18,9 +18,16 @@ internal static class Helpers
 
     public static bool IsMonorailClassSyntaxTargetForGeneration(SyntaxNode syntaxNode)
     {
-        return syntaxNode is ClassDeclarationSyntax c
-               && c.Modifiers.Any(i => i.IsKind(SyntaxKind.PartialKeyword))
-               && c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase);
+        if (syntaxNode is not ClassDeclarationSyntax c) return false;
+        if (!c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase)) return false;
+
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var i in c.Modifiers)
+        {
+            if (i.IsKind(SyntaxKind.PartialKeyword)) return true;
+        }
+
+        return false;
     }
 
     public static string GenerateExtensionClass(INamedTypeSymbol symbol, string methodName,
@@ -67,7 +74,7 @@ internal static class Helpers
 
     public static string[] GetCssClassFromHtml(string value, string regex)
     {
-        var matches = Regex.Matches(value, regex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        var matches = Regex.Matches(value, regex, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
         var results = new string[matches.Count];
         for (var i = 0; i < matches.Count; i++)
         {

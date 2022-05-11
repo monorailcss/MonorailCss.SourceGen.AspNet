@@ -1,0 +1,3 @@
+is_global = true
+
+fileparsergenerator_razor_regex = (class\s*=\s*[\'\"](?<value>[^<]*?)[\'\"])|(cssclass\s*=\s*[\'\"](?<value>[^<]*?)[\'\"])|(CssClass\s*\(\s*\"(?<value>[^<]*?)\"\s*\))
