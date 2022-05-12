@@ -26,18 +26,7 @@ public class FileParserGenerator: IIncrementalGenerator
 
         IncrementalValuesProvider<INamedTypeSymbol> monorailClassDeclarations = context.SyntaxProvider
             .CreateSyntaxProvider(
-                predicate: static (s, _) =>
-                {
-                    if (s is not ClassDeclarationSyntax c) return false;
-                    if (!c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase)) return false;
-
-                    // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-                    foreach (var i in c.Modifiers)
-                    {
-                        if (i.IsKind(SyntaxKind.PartialKeyword)) return true;
-                    }
-
-                    return false;                },
+                predicate: static (s, _) => Helpers.IsMonorailClassSyntaxTargetForGeneration(s),
                 transform: static (ctx, _) => Helpers.GetMonorailsSemanticTargetForGeneration(ctx))
             .Where(static m => m is not null)!;
 
