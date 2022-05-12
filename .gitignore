@@ -92,3 +92,6 @@ Thumbs.db
 node_modules
 
 /artifacts-dotnet-releaser/
+
+# roslyn source generated files
+Generated/
