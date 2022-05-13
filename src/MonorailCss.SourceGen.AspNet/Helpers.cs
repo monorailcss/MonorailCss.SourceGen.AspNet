@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -6,37 +7,60 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MonorailCss.SourceGen.AspNet;
 
+internal struct MonorailClassDefinition
+{
+    public MonorailClassDefinition(string ns, string classname, string modifiers)
+    {
+        Namespace = ns;
+        Classname = classname;
+        Modifiers = modifiers;
+    }
+
+    public string Namespace { get; }
+    public string Classname { get; }
+    public string Modifiers { get; }
+}
+
 internal static class Helpers
 {
-    public static INamedTypeSymbol? GetMonorailsSemanticTargetForGeneration(GeneratorSyntaxContext ctx)
+    public static MonorailClassDefinition GetMonorailsSemanticTargetForGeneration(GeneratorSyntaxContext ctx)
     {
-        // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
         var classDeclarationSyntax = (ClassDeclarationSyntax)ctx.Node;
 
-        return ctx.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax) ?? null;
+        var ns = GetNamespace(classDeclarationSyntax);
+        var classname = classDeclarationSyntax.Identifier.Text;
+        var modifiers = classDeclarationSyntax.Modifiers.ToString();
+
+        return new MonorailClassDefinition(ns, classname, modifiers);
     }
 
     public static bool IsMonorailClassSyntaxTargetForGeneration(SyntaxNode syntaxNode)
     {
         if (syntaxNode is not ClassDeclarationSyntax c) return false;
-        if (!c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase)) return false;
 
+        var isPartial = false;
+
+        // this is an extremely frequently called path, so avoid linq. by checking for
+        // the partial keyword we should be able to exit pretty quickly without needing to compare strings.
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var i in c.Modifiers)
         {
-            if (i.IsKind(SyntaxKind.PartialKeyword)) return true;
+            if (i.IsKind(SyntaxKind.PartialKeyword))
+            {
+                isPartial = true;
+                break;
+            }
         }
 
-        return false;
+        return isPartial && c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase);
     }
 
-    public static string GenerateExtensionClass(INamedTypeSymbol symbol, string methodName,
-        HashSet<string> classesToGenerate)
+    public static string GenerateExtensionClass(MonorailClassDefinition symbol, string methodName,
+        ImmutableHashSet<string> classesToGenerate)
     {
-        var ns = symbol.ContainingNamespace.ToDisplayString();
-        var className = symbol.Name;
-        var accessibility = GetAccessibility(symbol);
-        var isStatic = symbol.IsStatic;
+        var ns = symbol.Namespace;
+        var className = symbol.Classname;
+        var modifiers = symbol.Modifiers;
 
         var isFirst = true;
         var sb = new StringBuilder();
@@ -45,28 +69,36 @@ internal static class Helpers
             ns = "Root";
         }
 
-        sb.Append($@"namespace {ns}
+        sb.AppendLine($@"namespace {ns}
 {{
-    {accessibility} {(isStatic ? "static " : "")}partial class {className}
-    {{
-        private static string[] {methodName}() => new string[] {{
-");
-        foreach (var css in classesToGenerate)
+    {modifiers} class {className}
+    {{");
+
+        if (classesToGenerate.Count == 0)
         {
-            if (isFirst)
+            sb.AppendLine(@$"private static string[] {methodName}() => Array.Empty<string>();");
+        }
+        else
+        {
+            sb.AppendLine(@$"private static string[] {methodName}() => new string[] {{");
+            foreach (var css in classesToGenerate)
             {
-                sb.Append($"\"{css}\"");
-                isFirst = false;
+                if (isFirst)
+                {
+                    sb.Append($"\"{css}\"");
+                    isFirst = false;
+                }
+                else
+                {
+                    sb.Append($", \"{css}\"");
+                }
             }
-            else
-            {
-                sb.Append($", \"{css}\"");
-            }
+
+            sb.AppendLine(@"};");
         }
 
-        sb.Append(@"
-        };
-    }
+        sb.AppendLine(@"
+        }
 }");
 
         return sb.ToString();
@@ -74,7 +106,8 @@ internal static class Helpers
 
     public static string[] GetCssClassFromHtml(string value, string regex)
     {
-        var matches = Regex.Matches(value, regex, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        var matches = Regex.Matches(value, regex,
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
         var results = new string[matches.Count];
         for (var i = 0; i < matches.Count; i++)
         {
@@ -84,19 +117,50 @@ internal static class Helpers
         return results;
     }
 
-    public static string GetAccessibility(INamedTypeSymbol symbol)
+    // determine the namespace the class/enum/struct is declared in, if any
+    static string GetNamespace(BaseTypeDeclarationSyntax syntax)
     {
-        var accessibility = symbol.DeclaredAccessibility switch
+        // If we don't have a namespace at all we'll return an empty string
+        // This accounts for the "default namespace" case
+        var nameSpace = string.Empty;
+
+        // Get the containing syntax node for the type declaration
+        // (could be a nested type, for example)
+        var potentialNamespaceParent = syntax.Parent;
+
+        // Keep moving "out" of nested classes etc until we get to a namespace
+        // or until we run out of parents
+        while (potentialNamespaceParent != null &&
+               potentialNamespaceParent is not NamespaceDeclarationSyntax
+               && potentialNamespaceParent is not FileScopedNamespaceDeclarationSyntax)
         {
-            Accessibility.NotApplicable => string.Empty,
-            Accessibility.Private => "private",
-            Accessibility.ProtectedAndInternal => "protected internal",
-            Accessibility.Protected => "protected",
-            Accessibility.Internal => "internal",
-            Accessibility.ProtectedOrInternal => "internal",
-            Accessibility.Public => "public",
-            _ => throw new ArgumentOutOfRangeException()
-        };
-        return accessibility;
+            potentialNamespaceParent = potentialNamespaceParent.Parent;
+        }
+
+        // Build up the final namespace by looping until we no longer have a namespace declaration
+        if (potentialNamespaceParent is not BaseNamespaceDeclarationSyntax namespaceParent)
+        {
+            return nameSpace;
+        }
+
+        // We have a namespace. Use that as the type
+        nameSpace = namespaceParent.Name.ToString();
+
+        // Keep moving "out" of the namespace declarations until we
+        // run out of nested namespace declarations
+        while (true)
+        {
+            if (namespaceParent.Parent is not NamespaceDeclarationSyntax parent)
+            {
+                break;
+            }
+
+            // Add the outer namespace as a prefix to the final namespace
+            nameSpace = $"{namespaceParent.Name}.{nameSpace}";
+            namespaceParent = parent;
+        }
+
+        // return the final namespace
+        return nameSpace;
     }
 }

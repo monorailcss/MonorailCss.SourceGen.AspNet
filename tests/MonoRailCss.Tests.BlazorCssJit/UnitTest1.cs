@@ -41,7 +41,7 @@ public class UnitTest1
     [Fact]
     public async Task Test1()
     {
-        var projFile = PathTestHelper.GetPath("../MvcTestApp/MvcTestApp.csproj");
+        var projFile = PathTestHelper.GetPath("../BlazorWasmTestApp/BlazorWasmTestApp.csproj");
         var workspace = MSBuildWorkspace.Create();
         workspace.SkipUnrecognizedProjects = true;
         var project = await workspace.OpenProjectAsync(projFile);
@@ -49,7 +49,7 @@ public class UnitTest1
 
         // directly create an instance of the generator
         // (Note: in the compiler this is loaded from an assembly, and created via reflection at runtime)
-        var generator = new FileParserGenerator();
+        var generator = new MonorailCssClassGenerator();
 
         // Create the driver that will control the generation, passing in our generator
         var driver = CSharpGeneratorDriver.Create(generator)

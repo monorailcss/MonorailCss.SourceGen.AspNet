@@ -9,7 +9,7 @@
         <Copyright>Phil Scott</Copyright>
         <PackageProjectUrl>https://github.com/monorailcss/MonorailCss.SourceGen.AspNet</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-
+        <IsRoslynComponent>true</IsRoslynComponent>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
