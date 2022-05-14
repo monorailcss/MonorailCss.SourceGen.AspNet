@@ -106,8 +106,9 @@ internal static class Helpers
 
     public static string[] GetCssClassFromHtml(string value, string regex)
     {
-        var matches = Regex.Matches(value, regex,
-            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        // without RegexOptions.Compiled this runs in about 40us vs 20us compiled, so we'd need about 1000
+        // razor files for this to catch up in perf by compiling it.
+        var matches = Regex.Matches(value, regex, RegexOptions.IgnoreCase | RegexOptions.Multiline);
         var results = new string[matches.Count];
         for (var i = 0; i < matches.Count; i++)
         {
