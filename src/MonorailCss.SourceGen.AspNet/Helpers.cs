@@ -55,53 +55,46 @@ internal static class Helpers
         return isPartial && c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase);
     }
 
-    public static string GenerateExtensionClass(MonorailClassDefinition symbol, string methodName,
+    public static string GenerateExtensionClass(
+        MonorailClassDefinition symbol,
+        string methodName,
         ImmutableHashSet<string> classesToGenerate)
     {
         var ns = symbol.Namespace;
         var className = symbol.Classname;
         var modifiers = symbol.Modifiers;
 
-        var isFirst = true;
-        var sb = new StringBuilder();
         if (ns == "<global namespace>")
         {
             ns = "Root";
         }
 
-        sb.AppendLine($@"namespace {ns}
-{{
-    {modifiers} class {className}
-    {{");
-
         if (classesToGenerate.Count == 0)
         {
-            sb.AppendLine(@$"private static string[] {methodName}() => Array.Empty<string>();");
-        }
-        else
-        {
-            sb.AppendLine(@$"private static string[] {methodName}() => new string[] {{");
-            foreach (var css in classesToGenerate)
-            {
-                if (isFirst)
-                {
-                    sb.Append($"\"{css}\"");
-                    isFirst = false;
-                }
-                else
-                {
-                    sb.Append($", \"{css}\"");
-                }
-            }
+            return $$"""
+using System.Lists.Generic;
 
-            sb.AppendLine(@"};");
+namespace {{ns}}
+{
+    {{modifiers}} class {{className}}
+    {
+        private static string[] {{methodName}}() => Array.Empty<string>();
+    }
+}
+""";
         }
 
-        sb.AppendLine(@"
-        }
-}");
-
-        return sb.ToString();
+        return $$"""
+namespace {{ns}}
+{
+    {{modifiers}} class {{className}}
+    {
+        private static string[] {{methodName}}() => new string[] {
+            {{ string.Join(", ", classesToGenerate.Select(i => $"\"{i}\"")) }}
+        };
+    }
+}
+""";
     }
 
     public static string[] GetCssClassFromHtml(string value, string regex)
