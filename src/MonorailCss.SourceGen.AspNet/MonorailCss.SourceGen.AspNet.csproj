@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <LangVersion>Latest</LangVersion>
+        <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
         <IsRoslynComponent>true</IsRoslynComponent>
         <Description>MonorailCSS.SourceGen.AspNet is a source generator to assist in finding in use CSS classes for ASP.NET sites.</Description>

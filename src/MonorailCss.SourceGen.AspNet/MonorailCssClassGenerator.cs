@@ -55,6 +55,7 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
                 // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var filter in value.Right.Filter)
                 {
+                    File.AppendAllText("r:\\test.txt", value.Left.Path + Environment.NewLine);
                     if (value.Left.Path.EndsWith(filter))
                     {
                         return true;
@@ -73,6 +74,7 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
     {
         var config = context.AnalyzerConfigOptionsProvider.Select((provider, _) =>
         {
+            // language=regex
             var regex = @"(class\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(cssclass\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(CssClass\s*\(\s*\""(?<value>[^<]*?)\""\s*\))";
             var additionalFileFilter = new[] { ".cshtml", ".razor" };
 
@@ -85,6 +87,9 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
             {
                 additionalFileFilter = fileFilter.Split('|');
             }
+
+            var contents = $"filter: {additionalFileFilter}, regex: {regex}{Environment.NewLine}";
+            File.AppendAllText("r:\\test.txt", contents);
 
             return (Regex: regex, Filter: additionalFileFilter);
         });
@@ -141,6 +146,7 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
         var symbol = values.Symbols.First();
 
         var classesToGenerate = ImmutableHashSet.Create<string>();
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var classes in values.Classes)
         {
             classesToGenerate = classesToGenerate.Union(classes);
@@ -160,28 +166,27 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
         var className = symbol.Classname;
         var modifiers = symbol.Modifiers;
 
-        var sb = new StringBuilder();
         if (ns == "<global namespace>")
         {
             ns = "Root";
         }
 
-        sb.AppendLine($@"namespace {ns}
-{{
-    {modifiers} class {className}
-    {{
-        public static string[] CssClassValues() {{
+        var s = $$$"""
+namespace {{{ns}}}
+{
+    {{{modifiers}}} class {{{className}}}
+    {
+        public static string[] CssClassValues() {
             var output = new List<string>();
-            output.AddRange({CssClassCallGeneratorGeneratedMethodName}());
-            output.AddRange({FileParserGeneratorGeneratedMethodName}());
+            output.AddRange({{{CssClassCallGeneratorGeneratedMethodName}}}());
+            output.AddRange({{{FileParserGeneratorGeneratedMethodName}}}());
 
             return output.ToArray();
-        }}
-    ");
-        sb.AppendLine(@"
+        }
     }
 }
-");
-        spc.AddSource("monorail-css-jit.g.cs", sb.ToString());
+""";
+
+        spc.AddSource("monorail-css-jit.g.cs", s);
     }
 }
