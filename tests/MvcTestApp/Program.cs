@@ -21,14 +21,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.MapGet("/styles/style.css", (IMemoryCache cache) =>
+app.MapGet("/styles/style.css", () =>
 {
-    var style = cache.GetOrCreate("monorail-style", _ =>
-    {
-        var framework = new CssFramework();
-        return framework.Process(MvcTestApp.MonorailCss.CssClassValues());
-    });
-
+    // in production we should cache.
+    var framework = new CssFramework();
+    var style = framework.Process(MvcTestApp.MonorailCss.CssClassValues());
     return Results.Text(style, "text/css");
 });
 

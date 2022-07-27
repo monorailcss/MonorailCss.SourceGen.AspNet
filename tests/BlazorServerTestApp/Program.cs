@@ -31,12 +31,8 @@ app.MapFallbackToPage("/_Host");
 
 app.MapGet("/styles/style.css", (IMemoryCache cache) =>
 {
-    var style = cache.GetOrCreate("monorail-style", _ =>
-    {
-        var framework = new CssFramework();
-        return framework.Process(CssClassValues());
-    });
-
+    var framework = new CssFramework();
+    var style = framework.Process(CssClassValues());
     return Results.Text(style, "text/css");
 });
 

@@ -88,9 +88,6 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
                 additionalFileFilter = fileFilter.Split('|');
             }
 
-            var contents = $"filter: {additionalFileFilter}, regex: {regex}{Environment.NewLine}";
-            File.AppendAllText("r:\\test.txt", contents);
-
             return (Regex: regex, Filter: additionalFileFilter);
         });
         return config;
@@ -166,7 +163,7 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
         var className = symbol.Classname;
         var modifiers = symbol.Modifiers;
 
-        if (ns == "<global namespace>")
+        if (ns == "<global namespace>" || string.IsNullOrWhiteSpace(ns))
         {
             ns = "Root";
         }

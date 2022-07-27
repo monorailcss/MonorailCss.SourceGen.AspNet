@@ -14,9 +14,6 @@
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="**/*.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <GlobalAnalyzerConfigFiles  Include="monorailgen.globalconfig" />
   </ItemGroup>
   <ItemGroup>

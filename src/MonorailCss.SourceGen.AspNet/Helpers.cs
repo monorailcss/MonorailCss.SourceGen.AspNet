@@ -64,7 +64,7 @@ internal static class Helpers
         var className = symbol.Classname;
         var modifiers = symbol.Modifiers;
 
-        if (ns == "<global namespace>")
+        if (ns == "<global namespace>" || string.IsNullOrWhiteSpace(ns))
         {
             ns = "Root";
         }

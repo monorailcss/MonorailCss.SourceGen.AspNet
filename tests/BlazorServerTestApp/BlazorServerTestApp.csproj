@@ -17,9 +17,6 @@
     <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.15"/>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="**/*.razor" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\MonorailCss.SourceGen.AspNet\MonorailCss.SourceGen.AspNet.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer"/>
   </ItemGroup>
 
