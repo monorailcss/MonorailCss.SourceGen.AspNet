@@ -1,10 +1,18 @@
 ﻿@inherits LayoutComponentBase
+@inject IHostEnvironment HostEnvironment
 
 <PageTitle>BlazorServerTestApp</PageTitle>
 
+@if (HostEnvironment.IsDevelopment())
+{
+    <HeadContent>
+        <link href="/styles/style.css?cache=@_cacheBuster" rel="stylesheet"/>
+    </HeadContent>
+}
+
 <div class="font-sans relative flex flex-col sm:flex-row">
-    <div class="bg-gradient-to-b from-green-900 to-purple-900 sticky sm:w-72 sm:h-screen ">
-        <NavMenu />
+    <div class="bg-gradient-to-b from-red-900 to-slate-900 sticky sm:w-72 sm:h-screen ">
+        <NavMenu/>
     </div>
 
     <main class="flex-1">
@@ -17,3 +25,15 @@
         </article>
     </main>
 </div>
+
+@code{
+
+    private string _cacheBuster = string.Empty;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _cacheBuster = Guid.NewGuid().ToString();
+        base.OnAfterRender(firstRender);
+    }
+
+}

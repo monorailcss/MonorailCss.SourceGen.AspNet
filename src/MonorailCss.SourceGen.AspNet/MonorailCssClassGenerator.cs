@@ -55,7 +55,6 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
                 // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var filter in value.Right.Filter)
                 {
-                    File.AppendAllText("r:\\test.txt", value.Left.Path + Environment.NewLine);
                     if (value.Left.Path.EndsWith(filter))
                     {
                         return true;

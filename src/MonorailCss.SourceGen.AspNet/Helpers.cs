@@ -52,7 +52,9 @@ internal static class Helpers
             }
         }
 
-        return isPartial && c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase);
+        return isPartial &&
+               (c.Identifier.ToString().Equals("Monorail", StringComparison.InvariantCultureIgnoreCase) ||
+                c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase));
     }
 
     public static string GenerateExtensionClass(
@@ -74,27 +76,27 @@ internal static class Helpers
             return $$"""
 using System.Collections.Generic;
 
-namespace {{ns}}
+namespace {{ ns}}
 {
-    {{modifiers}} class {{className}}
+    {{ modifiers}}  class {{ className}}
     {
-        private static string[] {{methodName}}() => Array.Empty<string>();
+        private static string[] {{ methodName}} () => Array.Empty<string>();
     }
 }
-""";
+""" ;
         }
 
         return $$"""
-namespace {{ns}}
+namespace {{ ns}}
 {
-    {{modifiers}} class {{className}}
+    {{ modifiers}}  class {{ className}}
     {
-        private static string[] {{methodName}}() => new string[] {
-            {{ string.Join(", ", classesToGenerate.Select(i => $"\"{i}\"")) }}
+        private static string[] {{ methodName}} () => new string[] {
+            {{ string.Join(", ", classesToGenerate.Select(i => $"\"{i}\""))}}
         };
     }
 }
-""";
+""" ;
     }
 
     public static string[] GetCssClassFromHtml(string value, string regex)
