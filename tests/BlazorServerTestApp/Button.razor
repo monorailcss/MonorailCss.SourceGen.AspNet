@@ -1,4 +1,5 @@
-﻿<button type="submit" class="inline-flex items-center px-2 py-1 border border-slate-300 shadow-sm rounded text-gray-700 bg-slate-100 hover:bg-slate-50" onclick="@OnClick" @onclick:preventDefault="@PreventDefault">@ChildContent</button>
+@using BlazorComponentUtilities
+<button type="submit" class="inline-flex items-center px-2 py-1 border border-slate-300 shadow-sm rounded text-gray-700 hover:bg-slate-50 @ClassToRender" disabled="@Disabled" onclick="@OnClick" @onclick:preventDefault="@PreventDefault">@ChildContent</button>
 
 @code {
 
@@ -8,6 +9,19 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; } = null!;
 
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private string ClassToRender = string.Empty;
+
     private bool PreventDefault => OnClick.HasDelegate;
+
+    protected override void OnParametersSet()
+    {
+        ClassToRender = new CssBuilder()
+            .AddClass("bg-slate-100", when: !Disabled)
+            .AddClass("bg-gray-100", when: Disabled)
+            .Build();
+    }
 
 }

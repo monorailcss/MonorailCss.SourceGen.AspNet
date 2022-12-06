@@ -17,7 +17,7 @@ public class GeneratorTests
             }.ToImmutableArray()
         );
 
-    [Fact(Skip = "needs total rework")]
+    [Fact]
     public async Task Can_Generate_from_CssClass_call()
     {
         var test = new VerifyCS.Test

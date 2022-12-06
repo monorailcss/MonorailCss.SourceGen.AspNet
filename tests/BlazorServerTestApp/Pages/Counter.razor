@@ -6,7 +6,7 @@
 
 <p role="status">Current count: @currentCount</p>
 
-<Button @onclick="IncrementCount">Click me</Button>
+<Button disabled="@(currentCount > 10)" @onclick="IncrementCount">Click me</Button>
 
 @code {
     private int currentCount = 0;

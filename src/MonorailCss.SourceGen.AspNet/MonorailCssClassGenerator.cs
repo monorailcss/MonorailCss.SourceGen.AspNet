@@ -8,9 +8,6 @@ namespace MonorailCss.SourceGen.AspNet;
 [Generator]
 public class MonorailCssClassGenerator : IIncrementalGenerator
 {
-    private const string CssClassCallGeneratorGeneratedMethodName = "GetCssClasses";
-    private const string FileParserGeneratorGeneratedMethodName = "GetFileParser";
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var monorailClassDeclarations = context.SyntaxProvider
@@ -19,21 +16,81 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
                 transform: static (ctx, _) => Helpers.GetMonorailsSemanticTargetForGeneration(ctx))
             .Collect();
 
-        var parsedRazorValues = GetParsedRazorValue(context);
-        var addCssClassCall = GetCssClassCallValue(context);
+        var parsedRazorValues = GetParsedRazorValue(context).Collect();
+        var addCssClassCall = GetCssClassCallValue(context).Collect();
 
         context.RegisterSourceOutput(
-            monorailClassDeclarations,
-            static (spc, source) => ExecuteAddMain(source, spc));
-        context.RegisterSourceOutput(
-            addCssClassCall.Collect().Combine(monorailClassDeclarations),
-            static (spc, source) => ExecuteAddCssClass(source, spc));
-        context.RegisterSourceOutput(
-            parsedRazorValues.Collect().Combine(monorailClassDeclarations),
-            static (spc, source) => ExecuteParsedRazor(source, spc));
+            monorailClassDeclarations.Combine(parsedRazorValues).Combine(addCssClassCall),
+            static (spc, source) => ExecuteAdd(source, spc));
     }
 
-    private static IncrementalValuesProvider<string[]> GetCssClassCallValue(IncrementalGeneratorInitializationContext context)
+
+    private static void ExecuteAdd(
+        ((ImmutableArray<MonorailClassDefinition> ClassDefinition, ImmutableArray<string[]> CssClasses) Left,
+            ImmutableArray<string[]> CssClasses) value, SourceProductionContext spc)
+    {
+        if (value.Left.ClassDefinition.Length == 0) return;
+
+        var symbol = value.Left.ClassDefinition.First();
+
+
+        var classesToGenerate = ImmutableHashSet.Create<string>();
+
+        var cssClassesFromRazor = value.Left.CssClasses.Sum(i => i.Length);
+        var cssClassesFromMethodCalls = value.CssClasses.Sum(i => i.Length);
+        foreach (var classes in value.CssClasses)
+        {
+            classesToGenerate = classesToGenerate.Union(classes);
+        }
+
+        foreach (var classes in value.Left.CssClasses)
+        {
+            classesToGenerate = classesToGenerate.Union(classes);
+        }
+
+        var classList =
+            Helpers.GenerateExtensionClass(classesToGenerate);
+
+        var ns = symbol.Namespace;
+        var className = symbol.Classname;
+        var modifiers = symbol.Modifiers;
+
+        if (ns == "<global namespace>" || string.IsNullOrWhiteSpace(ns))
+        {
+            ns = "Root";
+        }
+
+        var s = $$$"""
+namespace {{{ns}}}
+{
+    {{{modifiers}}} class {{{className}}}
+    {
+        private static string[] _output = new[] {
+            {{{classList}}}
+        };
+
+        /// <summary>
+        /// Returns a list of discovered CSS classes from razor files and marked calls.
+        /// </summary>
+        /// <remarks>
+        /// <p>Discovered the follow CSS classes:</p>
+        /// <ul>
+        ///     <li>Razor CSS class attributes: {{{cssClassesFromRazor}}}.</li>
+        ///     <li>Method calls: {{{cssClassesFromMethodCalls}}}.</li>
+        /// </ul>
+        /// </remarks>
+        public static string[] CssClassValues() {
+            return _output;
+        }
+    }
+}
+""";
+
+        spc.AddSource("monorail-css-jit.g.cs", s);
+    }
+
+    private static IncrementalValuesProvider<string[]> GetCssClassCallValue(
+        IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<string[]> addCssClassCall = context.SyntaxProvider
             .CreateSyntaxProvider(
@@ -74,7 +131,8 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
         var config = context.AnalyzerConfigOptionsProvider.Select((provider, _) =>
         {
             // language=regex
-            var regex = @"(class\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(cssclass\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(CssClass\s*\(\s*\""(?<value>[^<]*?)\""\s*\))";
+            var regex =
+                @"(class\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(cssclass\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(CssClass\s*\(\s*\""(?<value>[^<]*?)\""\s*\))";
             var additionalFileFilter = new[] { ".cshtml", ".razor" };
 
             if (provider.GlobalOptions.TryGetValue("fileparsergenerator_razor_regex", out var configValue))
@@ -104,85 +162,28 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
 
     private static bool IsSyntaxTargetForCssClassCallGeneration(SyntaxNode syntaxNode)
     {
-        return syntaxNode is InvocationExpressionSyntax i
-               && i.ArgumentList.Arguments.Count == 1
-               && i.ArgumentList.Arguments[0].Expression is LiteralExpressionSyntax
-               && (
-                   i.Expression.ToString().Equals("CssClass", StringComparison.Ordinal)
-                   || (i.Expression is MemberAccessExpressionSyntax me &&
-                       me.Name.ToString().Equals("CssClass", StringComparison.Ordinal))
-               );
-    }
-
-    private static void ExecuteAddCssClass(
-        (ImmutableArray<string[]> Classes, ImmutableArray<MonorailClassDefinition> Symbols) values,
-        SourceProductionContext context)
-    {
-        if (values.Symbols.Length == 0) return;
-
-        var symbol = values.Symbols.First();
-        var classesToGenerate = ImmutableHashSet.Create<string>();
-
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-        foreach (var classes in values.Classes)
+        if (syntaxNode is not InvocationExpressionSyntax i)
         {
-            classesToGenerate = classesToGenerate.Union(classes);
+            return false;
         }
 
-        var source = Helpers.GenerateExtensionClass(symbol, CssClassCallGeneratorGeneratedMethodName, classesToGenerate);
-        context.AddSource( "monorail-css-jit-cssclass.g.cs", source);
-    }
-
-    private static void ExecuteParsedRazor(
-        (ImmutableArray<string[]> Classes, ImmutableArray<MonorailClassDefinition> Symbols) values,
-        SourceProductionContext spc)
-    {
-        if (values.Symbols.Length == 0) return;
-
-        var symbol = values.Symbols.First();
-
-        var classesToGenerate = ImmutableHashSet.Create<string>();
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-        foreach (var classes in values.Classes)
+        if (i.ArgumentList.Arguments.Count == 0 || i.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax)
         {
-            classesToGenerate = classesToGenerate.Union(classes);
+            return false;
         }
 
-        var source = Helpers.GenerateExtensionClass(symbol, FileParserGeneratorGeneratedMethodName, classesToGenerate);
-        spc.AddSource("monorail-css-jit-razor.g.cs", source);
-    }
-
-    private static void ExecuteAddMain(ImmutableArray<MonorailClassDefinition> symbols, SourceProductionContext spc)
-    {
-        if (symbols.Length == 0) return;
-
-        var symbol = symbols.First();
-
-        var ns = symbol.Namespace;
-        var className = symbol.Classname;
-        var modifiers = symbol.Modifiers;
-
-        if (ns == "<global namespace>" || string.IsNullOrWhiteSpace(ns))
+        if (i.Expression.ToString().Equals("CssClass", StringComparison.Ordinal) ||
+            i.Expression.ToString().Equals("AddClass", StringComparison.Ordinal))
         {
-            ns = "Root";
+            return true;
         }
 
-        var s = $$$"""
-namespace {{{ns}}}
-{
-    {{{modifiers}}} class {{{className}}}
-    {
-        public static string[] CssClassValues() {
-            var output = new List<string>();
-            output.AddRange({{{CssClassCallGeneratorGeneratedMethodName}}}());
-            output.AddRange({{{FileParserGeneratorGeneratedMethodName}}}());
-
-            return output.ToArray();
+        if (i.Expression is not MemberAccessExpressionSyntax me)
+        {
+            return false;
         }
-    }
-}
-""";
 
-        spc.AddSource("monorail-css-jit.g.cs", s);
+        return me.Name.ToString().Equals("CssClass", StringComparison.Ordinal) ||
+               me.Name.ToString().Equals("AddClass", StringComparison.Ordinal);
     }
 }

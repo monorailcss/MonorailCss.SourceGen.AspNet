@@ -57,46 +57,9 @@ internal static class Helpers
                 c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static string GenerateExtensionClass(
-        MonorailClassDefinition symbol,
-        string methodName,
-        ImmutableHashSet<string> classesToGenerate)
+    public static string GenerateExtensionClass(ImmutableHashSet<string> classesToGenerate)
     {
-        var ns = symbol.Namespace;
-        var className = symbol.Classname;
-        var modifiers = symbol.Modifiers;
-
-        if (ns == "<global namespace>" || string.IsNullOrWhiteSpace(ns))
-        {
-            ns = "Root";
-        }
-
-        if (classesToGenerate.Count == 0)
-        {
-            return $$"""
-using System.Collections.Generic;
-
-namespace {{ ns}}
-{
-    {{ modifiers}}  class {{ className}}
-    {
-        private static string[] {{ methodName}} () => Array.Empty<string>();
-    }
-}
-""" ;
-        }
-
-        return $$"""
-namespace {{ ns}}
-{
-    {{ modifiers}}  class {{ className}}
-    {
-        private static string[] {{ methodName}} () => new string[] {
-            {{ string.Join(", ", classesToGenerate.Select(i => $"\"{i}\""))}}
-        };
-    }
-}
-""" ;
+        return string.Join(", ", classesToGenerate.Select(i => $"\"{i}\""));
     }
 
     public static string[] GetCssClassFromHtml(string value, string regex)
@@ -114,7 +77,7 @@ namespace {{ ns}}
     }
 
     // determine the namespace the class/enum/struct is declared in, if any
-    static string GetNamespace(BaseTypeDeclarationSyntax syntax)
+    static string GetNamespace(SyntaxNode syntax)
     {
         // If we don't have a namespace at all we'll return an empty string
         // This accounts for the "default namespace" case

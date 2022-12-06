@@ -1,3 +1,4 @@
+using BlazorServerTestApp;
 using BlazorServerTestApp.Data;
 using Microsoft.Extensions.Caching.Memory;
 using MonorailCss;
@@ -32,7 +33,7 @@ app.MapFallbackToPage("/_Host");
 app.MapGet("/styles/style.css", (IMemoryCache cache) =>
 {
     var framework = new CssFramework();
-    var style = framework.Process(CssClassValues());
+    var style = framework.Process(Monorail.CssClassValues());
     return Results.Text(style, "text/css");
 });
 

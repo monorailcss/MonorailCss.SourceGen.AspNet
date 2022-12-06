@@ -15,6 +15,7 @@
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="BlazorComponentUtilities" Version="1.8.0" />
     <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.15" />
   </ItemGroup>
   <ItemGroup>
