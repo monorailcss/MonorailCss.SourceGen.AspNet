@@ -1,0 +1,35 @@
+﻿@using global::MonorailCss
+@inherits LayoutComponentBase
+<HeadContent>
+    <style>
+        @_cssContent
+    </style>
+</HeadContent>
+
+<div class="font-sans relative flex flex-col sm:flex-row">
+    <div class="bg-gradient-to-b from-blue-900 to-slate-900 sticky sm:w-72 sm:h-screen ">
+        <NavMenu />
+    </div>
+
+    <main class="flex-1">
+        <div class="hidden sm:flex sm:t-0 bg-slate-50 border-b border-b-slate-100 justify-end h-16 flex items-center px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="px-4 pt-4 prose">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code{
+    private string _cssContent = "body {display:none;}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var framework = new CssFramework();
+        var values = Monorail.CssClassValues();
+        _cssContent =  framework.Process(values);
+        await base.OnParametersSetAsync();
+    }
+}

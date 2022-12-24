@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -57,11 +55,6 @@ internal static class Helpers
                 c.Identifier.ToString().Equals("MonorailCSS", StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static string GenerateExtensionClass(ImmutableHashSet<string> classesToGenerate)
-    {
-        return string.Join(", ", classesToGenerate.Select(i => $"\"{i}\""));
-    }
-
     public static string[] GetCssClassFromHtml(string value, string regex)
     {
         // without RegexOptions.Compiled this runs in about 40us vs 20us compiled, so we'd need about 1000
@@ -77,7 +70,7 @@ internal static class Helpers
     }
 
     // determine the namespace the class/enum/struct is declared in, if any
-    static string GetNamespace(SyntaxNode syntax)
+    private static string GetNamespace(SyntaxNode syntax)
     {
         // If we don't have a namespace at all we'll return an empty string
         // This accounts for the "default namespace" case

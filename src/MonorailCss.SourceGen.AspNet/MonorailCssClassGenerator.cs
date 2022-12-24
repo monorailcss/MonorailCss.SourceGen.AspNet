@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using System.Text;
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -32,8 +32,6 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
         if (value.Left.ClassDefinition.Length == 0) return;
 
         var symbol = value.Left.ClassDefinition.First();
-
-
         var classesToGenerate = ImmutableHashSet.Create<string>();
 
         var cssClassesFromRazor = value.Left.CssClasses.Sum(i => i.Length);
@@ -48,8 +46,7 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
             classesToGenerate = classesToGenerate.Union(classes);
         }
 
-        var classList =
-            Helpers.GenerateExtensionClass(classesToGenerate);
+        var classList =  string.Join(", ", classesToGenerate.Select(i => $"\"{i}\""));
 
         var ns = symbol.Namespace;
         var className = symbol.Classname;
@@ -78,6 +75,7 @@ namespace {{{ns}}}
         ///     <li>Razor CSS class attributes: {{{cssClassesFromRazor}}}.</li>
         ///     <li>Method calls: {{{cssClassesFromMethodCalls}}}.</li>
         /// </ul>
+        /// <p>Generated at {{{DateTime.Now.ToString(CultureInfo.InvariantCulture)}}}.</p>
         /// </remarks>
         public static string[] CssClassValues() {
             return _output;

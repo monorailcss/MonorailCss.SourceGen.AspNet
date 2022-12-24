@@ -14,10 +14,10 @@
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <GlobalAnalyzerConfigFiles  Include="monorailgen.globalconfig" />
+    <GlobalAnalyzerConfigFiles Include="monorailgen.globalconfig" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.15" />
+    <PackageReference Include="MonorailCss" Version="0.0.2-preview.0.3.1.34" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\MonorailCss.SourceGen.AspNet\MonorailCss.SourceGen.AspNet.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
