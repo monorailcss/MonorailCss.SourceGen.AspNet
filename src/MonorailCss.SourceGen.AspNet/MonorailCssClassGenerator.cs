@@ -19,15 +19,59 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
         var parsedRazorValues = GetParsedRazorValue(context).Collect();
         var addCssClassCall = GetCssClassCallValue(context).Collect();
 
+        // Using Combine to gather all necessary data for both outputs
+        var combined = monorailClassDeclarations.Combine(parsedRazorValues).Combine(addCssClassCall);
+
+        // Register the implementation source (not visible to intellisense)
+        context.RegisterImplementationSourceOutput(
+            combined,
+            static (spc, source) => GenerateImplementation(source, spc));
+
+        // Register the public API source (visible to intellisense)
         context.RegisterSourceOutput(
-            monorailClassDeclarations.Combine(parsedRazorValues).Combine(addCssClassCall),
-            static (spc, source) => ExecuteAdd(source, spc));
+            monorailClassDeclarations,
+            static (spc, classDefinitions) => GeneratePublicAPI(classDefinitions, spc));
     }
 
+    private static void GeneratePublicAPI(
+        ImmutableArray<MonorailClassDefinition> classDefinitions,
+        SourceProductionContext spc)
+    {
+        if (classDefinitions.Length == 0) return;
 
-    private static void ExecuteAdd(
+        var symbol = classDefinitions.First();
+        var ns = symbol.Namespace;
+        var className = symbol.Classname;
+        var modifiers = symbol.Modifiers;
+
+        if (ns == "<global namespace>" || string.IsNullOrWhiteSpace(ns))
+        {
+            ns = "Root";
+        }
+
+        var publicApi = $$"""
+namespace {{ns}}
+{
+    {{modifiers}} class {{className}}
+    {
+        /// <summary>
+        /// Returns a list of discovered CSS classes from razor files and marked calls.
+        /// </summary>
+        public static string[] CssClassValues()
+        {
+            return InternalCssClassValues();
+        }
+    }
+}
+""";
+
+        spc.AddSource("monorail-css-jit-public.g.cs", publicApi);
+    }
+
+    private static void GenerateImplementation(
         ((ImmutableArray<MonorailClassDefinition> ClassDefinition, ImmutableArray<string[]> CssClasses) Left,
-            ImmutableArray<string[]> CssClasses) value, SourceProductionContext spc)
+            ImmutableArray<string[]> CssClasses) value,
+        SourceProductionContext spc)
     {
         if (value.Left.ClassDefinition.Length == 0) return;
 
@@ -36,6 +80,7 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
 
         var cssClassesFromRazor = value.Left.CssClasses.Sum(i => i.Length);
         var cssClassesFromMethodCalls = value.CssClasses.Sum(i => i.Length);
+
         foreach (var classes in value.CssClasses)
         {
             classesToGenerate = classesToGenerate.Union(classes);
@@ -46,7 +91,7 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
             classesToGenerate = classesToGenerate.Union(classes);
         }
 
-        var classList =  string.Join(", ", classesToGenerate.Select(i => $"\"{i}\""));
+        var classList = string.Join(", ", classesToGenerate.Select(i => $"\"{i}\""));
 
         var ns = symbol.Namespace;
         var className = symbol.Classname;
@@ -57,34 +102,34 @@ public class MonorailCssClassGenerator : IIncrementalGenerator
             ns = "Root";
         }
 
-        var s = $$$"""
-namespace {{{ns}}}
+        var implementation = $$"""
+namespace {{ns}}
 {
-    {{{modifiers}}} class {{{className}}}
+    {{modifiers}} class {{className}}
     {
         private static string[] _output = new[] {
-            {{{classList}}}
+            {{classList}}
         };
 
         /// <summary>
-        /// Returns a list of discovered CSS classes from razor files and marked calls.
+        /// Internal implementation that returns a list of discovered CSS classes from razor files and marked calls.
         /// </summary>
         /// <remarks>
         /// <p>Discovered the follow CSS classes:</p>
         /// <ul>
-        ///     <li>Razor CSS class attributes: {{{cssClassesFromRazor}}}.</li>
-        ///     <li>Method calls: {{{cssClassesFromMethodCalls}}}.</li>
+        ///     <li>Razor CSS class attributes: {{cssClassesFromRazor}}.</li>
+        ///     <li>Method calls: {{cssClassesFromMethodCalls}}.</li>
         /// </ul>
-        /// <p>Generated at {{{DateTime.Now.ToString(CultureInfo.InvariantCulture)}}}.</p>
+        /// <p>Generated at {{DateTime.Now.ToString(CultureInfo.InvariantCulture)}}.</p>
         /// </remarks>
-        public static string[] CssClassValues() {
+        private static string[] InternalCssClassValues() {
             return _output;
         }
     }
 }
 """;
 
-        spc.AddSource("monorail-css-jit.g.cs", s);
+        spc.AddSource("monorail-css-jit-impl.g.cs", implementation);
     }
 
     private static IncrementalValuesProvider<string[]> GetCssClassCallValue(
@@ -130,7 +175,7 @@ namespace {{{ns}}}
         {
             // language=regex
             var regex =
-                @"(class\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(cssclass\s*=\s*[\'\""](?<value>[^<]*?)[\'\""])|(CssClass\s*\(\s*\""(?<value>[^<]*?)\""\s*\))";
+                """(class\s*=\s*\"(?<value>[^<]*?)\")|(cssclass\s*=\s*\"(?<value>[^<]*?)\")|(CssClass\s*\(\s*\"(?<value>[^<]*?)\"\s*\))""";
             var additionalFileFilter = new[] { ".cshtml", ".razor" };
 
             if (provider.GlobalOptions.TryGetValue("fileparsergenerator_razor_regex", out var configValue))
@@ -154,7 +199,7 @@ namespace {{{ns}}}
         var argumentListArguments = invocationExpressionSyntax.ArgumentList.Arguments;
 
         return argumentListArguments[0].Expression is LiteralExpressionSyntax literalExpressionSyntax
-            ? new[] { literalExpressionSyntax.ToString().Replace("\"", string.Empty) }
+            ? [literalExpressionSyntax.ToString().Replace("\"", string.Empty)]
             : default;
     }
 
