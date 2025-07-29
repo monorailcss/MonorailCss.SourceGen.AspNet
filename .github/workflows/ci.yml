@@ -18,10 +18,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install .NET 6.0
+    - name: Install .NET 8.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '8.0.x'
 
     - name: Build, Test (Debug & Release), Publish (main only)
       shell: bash
